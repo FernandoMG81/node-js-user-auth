@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration forms</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+        #close-session {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #close-session:hover {
+            background-color: #e53935;
+        }
+        span {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <% if (typeof username !== 'undefined') { %>
+            <div class="form-container">
+                <h2>Hola <%= username %>!</h2>
+                <p>Estas en el panel de administración</p>
+                <button id="close-session">Cerrar Sesión</button>    
+            </div>
+        <% } %>
+
+        <% if (typeof username === 'undefined') { %>
+            <div class="form-container">
+                <form id="login-form">
+                    <h2>Inicio de Sesión</h2>
+                    <label for="rUsername">Username</label>
+                    <input type="text" name="username" id="rUsername" placeholder="Usuario" required>
+                    <label for="rPassword">Password</label>
+                    <input type="password" id="rPassword" placeholder="Contraseña" required>
+                    <button type="submit">Iniciar Sesión</button>
+                    <span>&nbsp;</span>
+                </form>
+            </div>
+            <div class="form-container">
+                <form id="register-form">
+                    <h2>Registro</h2>
+                    <label for="regUsername">Username</label>
+                    <input type="text" name="username" id="regUsername" placeholder="Usuario" required>
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Contraseña" required>
+                    <button type="submit">Registrarse</button>
+                    <span>&nbsp;</span>
+                </form>
+            </div>
+        <% } %>
+    </div>
+
+<script>
+    const $ = el => document.querySelector(el);
+
+    const loginform = $('#login-form');
+    const loginSpan = $('#login-form span');
+
+    const registerform = $('#register-form');
+    const registerSpan = $('#register-form span');
+
+    const logoutButton = $('#close-session');
+
+    loginform?.addEventListener('submit', e => {
+        e.preventDefault();
+
+        const username = $('#rUsername').value;
+        const password = $('#rPassword').value;
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => {
+            if (res.ok) {
+                loginSpan.innerText = 'Sesión iniciada... Entrando...';
+                loginSpan.style.color = 'green';
+                setTimeout(() => {
+                    window.location.href = '/protected';
+                }, 2000);
+            } else {
+                loginSpan.innerText = 'Usuario o contraseña incorrectos';
+                loginSpan.style.color = 'red';
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+    });
+
+    registerform?.addEventListener('submit', e => {
+        e.preventDefault();
+
+        const username = $('#regUsername').value;
+        const password = $('#regPassword').value;
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => {
+            if (res.ok) {
+                registerSpan.innerText = 'Usuario registrado... Iniciando sesión...';
+                registerSpan.style.color = 'green';
+                setTimeout(() => {
+                    window.location.href = '/protected';
+                }, 2000);
+            } else {
+                registerSpan.innerText = 'Usuario ya existe';
+                registerSpan.style.color = 'red';
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+    });
+
+    logoutButton?.addEventListener('click', e => {
+        e.preventDefault();
+        fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => {
+            window.location.href = '/';
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+    });
+</script>
+</body>
+</html>
